@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .board {
+            display: grid;
+            grid-template-columns: repeat(var(--size), 1fr);
+            width: 80vh;
+            height: 80vh;
+            border: 2px solid black;
+        }
+
+        .cell {
+            width: calc(100% / var(--size));
+            height: calc(100% / var(--size));
+            text-align: center;
+            vertical-align: middle;
+            font-size: 24px;
+            background-color: white;
+            border: 1px solid gray;
+        }
+
+        .cell.queen {
+            background-color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="number" id="n" placeholder="Enter N" />
+    <button onclick="solveNQueens()">Solve N-Queens</button>
+    <div class="board" id="board"></div>
+
+    <script>
+        async function solveNQueens() {
+            const n = parseInt(document.getElementById('n').value);
+            const board = new Array(n).fill(null).map(() => new Array(n).fill(false));
+            const solutions = [];
+
+            async function isSafe(row, col) {
+                for (let i = 0; i < col; i++) {
+                    if (board[row][i]) {
+                        return false;
+                    }
+                }
+
+                for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+                    if (board[i][j]) {
+                        return false;
+                    }
+                }
+
+                for (let i = row, j = col; i < n && j >= 0; i++, j--) {
+                    if (board[i][j]) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            async function solve(col) {
+                if (col === n) {
+                    solutions.push(board.map(row => [...row]));
+                    return;
+                }
+
+                for (let row = 0; row < n; row++) {
+                    if (await isSafe(row, col)) {
+                        board[row][col] = true;
+                        await delay(100);  // Add a delay for visualization
+                        solve(col + 1);
+                        board[row][col] = false;
+                    }
+                }
+            }
+
+            async function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            solutions.length = 0;  // Clear previous solutions
+            await solve(0);
+            displaySolutions(solutions);
+        }
+
+        function displaySolutions(solutions) {
+            const boardContainer = document.getElementById('board');
+            boardContainer.innerHTML = '';
+            solutions.forEach(solution => {
+                const boardElement = document.createElement('div');
+                boardElement.className = 'board';
+                boardElement.style.setProperty('--size', solution.length);
+
+                solution.forEach(row => {
+                    row.forEach(cell => {
+                        const cellElement = document.createElement('div');
+                        cellElement.className = 'cell';
+                        if (cell) {
+                            cellElement.classList.add('queen');
+                        }
+                        boardElement.appendChild(cellElement);
+                    });
+                });
+
+                boardContainer.appendChild(boardElement);
+            });
+        }
+    </script>
+</body>
+
+</html>
