@@ -1,5 +1,6 @@
 from tkinter import *
 import time
+from collections import deque
 
 width = 400
 height = 400
@@ -47,4 +48,63 @@ def main(capacity_jug_1, capacity_jug_2, target):
     root.mainloop()
 
 
-main(4, 3, 2)
+def water_jug_bfs(capacity_jug1, capacity_jug2, target_amount):
+    # Initialize the visited set to keep track of visited states
+    visited = set()
+
+    # Create a queue for BFS
+    queue = deque()
+
+    # Initialize with the initial state (0, 0)
+    queue.append((0, 0))
+
+    while queue:
+        # Get the current state from the queue
+        current_state = queue.popleft()
+        jug1, jug2 = current_state
+
+        # Check if the goal is reached
+        if jug1 == target_amount or jug2 == target_amount:
+            print("Goal reached!")
+            return
+
+        # Generate possible next states
+        next_states = []
+
+        # Fill jug 1 if it's empty
+        if jug1 < capacity_jug1:
+            next_states.append((capacity_jug1, jug2))
+
+        # Fill jug 2 if it's empty
+        if jug2 < capacity_jug2:
+            next_states.append((jug1, capacity_jug2))
+
+        # Empty jug 1
+        if jug1 > 0:
+            next_states.append((0, jug2))
+
+        # Empty jug 2
+        if jug2 > 0:
+            next_states.append((jug1, 0))
+
+        # Pour from jug 1 to jug 2
+        pour_amount = min(jug1, capacity_jug2 - jug2)
+        next_states.append((jug1 - pour_amount, jug2 + pour_amount))
+
+        # Pour from jug 2 to jug 1
+        pour_amount = min(jug2, capacity_jug1 - jug1)
+        next_states.append((jug1 + pour_amount, jug2 - pour_amount))
+
+        # Add unvisited next states to the queue
+        for state in next_states:
+            if state not in visited:
+                visited.add(state)
+                queue.append(state)
+
+    print("No solution found!")
+
+
+# Example usage:
+water_jug_bfs(4, 3, 2)
+
+# main(4, 3, 2)
